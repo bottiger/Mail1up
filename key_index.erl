@@ -1,4 +1,4 @@
--module(test).
+-module(key_index).
 -export([build/1, search/1]).
 
 build(0, F) -> file:close(F), F;
