@@ -9,7 +9,7 @@ check(User, Pass, MsgID) when is_integer(MsgID) -> check(User, Pass, " --msg-id 
 check(User, Pass, MsgString) ->
     code:add_path("erlang-json-eep-parser"),
     MailOut = os:cmd("./imap.py --username " ++ User ++ " --password " ++ Pass ++ MsgString),
-    %io:fwrite(MailOut).
+    %%io:fwrite(MailOut).
     json_eep:term_to_json(MailOut).
 
 
