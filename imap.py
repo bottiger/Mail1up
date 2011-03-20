@@ -12,21 +12,22 @@ folder = "INBOX"
 headers_only = False
 msg_id = 0
 
-opts, remainder = getopt.getopt(sys.argv[1:], 'u:p:s:f:a:', ['username=', 
-                                                         'password=',
-                                                         'server=',
-							 'folder=',
-							 'after=',
-							 'headers-only',
-							 'msg-id='
-                                                         ])
+opts, remainder = getopt.getopt(sys.argv[1:], 'u:p:s:f:a:',
+                                ['username=',
+                                 'password=',
+                                 'server=',
+                                 'folder=',
+                                 'after=',
+                                 'headers-only',
+                                 'msg-id=',
+                                 ])
 
-for opt, arg in opts:                
-        if opt in ("-u", "--username"):      
-            username = arg                
+for opt, arg in opts:
+        if opt in ("-u", "--username"):
+            username = arg
         elif opt in ("-p", "--password"):
             password = arg
-        elif opt in ("-s", "--server"): 
+        elif opt in ("-s", "--server"):
             server = arg
         elif opt in ("-f", "--folder"):
             folder = arg
@@ -41,6 +42,7 @@ if headers_only:
     message_parts = "HEADER"
 else:
     message_parts = "TEXT"
+
 
 def fetch_mail(M, msg_id, msg_parts, mail_list):
     typ, data = M.fetch(msg_id, '(BODY.PEEK[' + msg_parts + '])')
@@ -68,7 +70,7 @@ else:
         #mail_list.append({int(num): data2})
         #print('%s\n' % data[0][1].decode())
 
-print(json.dumps(mail_list, separators=(',',':') ))
+print(json.dumps(mail_list, separators=(',', ':')))
 
 M.close()
 M.logout()
