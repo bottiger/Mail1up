@@ -15,6 +15,7 @@ arguments = [
     ('headers-only', dict(default=False, action='store_const', const=True)),
     ('humanize', dict(default=False, action='store_const', const=True)),
     ('message-id', dict(type=int)),
+    ('list-folders', dict(default=False, action='store_const', const=True)),
     ]
 
 
@@ -31,15 +32,10 @@ parser = ArgumentParser(description='IMAP wrapper.')
 for name, args in arguments:
     args = unpack_argument(args)
     print(args)
-    parser.add_argument('--%s' % name,
-                        dest=name.replace('-', '_'),
-                        **args)
-args = parser.parse_args()
-
-# Set message part
-message_part = 'TEXT'
-if args.headers_only:
-    message_part = "HEADER"
+    parser.add_argument(
+        '--%s' % name,
+        dest=name.replace('-', '_'),
+        **args)
 
 
 def fetch_mail(M, msg_id, msg_part):
@@ -49,34 +45,56 @@ def fetch_mail(M, msg_id, msg_part):
     return {"mail-id": str(int(msg_id)), "content": data2}
 
 
-# Init mailbox
-M = imaplib.IMAP4_SSL(args.host)
-# Get username and password
-usernm = args.username
-usernm = (usernm == '-' and getpass.getpass('Username: ')) or usernm
-passwd = args.password
-passwd = (passwd == '-' and getpass.getpass()) or passwd
-M.login(usernm, passwd)
-M.select(args.folder, "true")
-typ, data = M.search(None, 'ALL')
+def fetch_result(M, args):
+    ''' Fetch result as specified in args '''
+    M.select(args.folder, "true")
+    typ, data = M.search(None, 'ALL')
 
-mail_list = []
+    if args.list_folders:
+        folders = M.list()
+        if folders[0] == 'OK':
+            return [folder.decode() for folder in folders[1]]
 
-if args.message_id is not None:
-    mail_list.append(fetch_mail(M, args.message_id, message_part))
-else:
-    for num in data[0].split():
-        mail_list.append(fetch_mail(M, num, message_part))
-        ##typ, data = M.fetch(num, '(BODY.PEEK[' + message_parts + '])')
-        ##data2 = data[0][1].decode()
-        ##mail_list.append({"mail-id": str(int(num)), "headers": data2})
-        #mail_list.append({int(num): data2})
-        #print('%s\n' % data[0][1].decode())
+    mail_list = []
+    if args.message_id is not None:
+        mail_list.append(fetch_mail(M, args.message_id, args.message_part))
+    else:
+        for num in data[0].split():
+            mail_list.append(fetch_mail(M, num, args.message_part))
+    return mail_list
 
-if args.humanize:
-    print(json.dumps(mail_list, indent=True))
-else:
-    print(json.dumps(mail_list, separators=(',', ':')))
 
-M.close()
-M.logout()
+def to_json(result, args):
+    ''' Convert result to JSON '''
+    if args.humanize:
+        json_args = dict(indent=True)
+    else:
+        json_args = dict(separators=(',', ':'))
+    return json.dumps(result, **json_args)
+
+
+def main():
+    args = parser.parse_args()
+    # Set message part
+    message_part = 'TEXT'
+    if args.headers_only:
+        message_part = 'HEADER'
+    setattr(args, 'message_part', message_part)
+
+    # Init mailbox
+    M = imaplib.IMAP4_SSL(args.host)
+    # Get username and password
+    usernm = args.username
+    usernm = (usernm == '-' and getpass.getpass('Username: ')) or usernm
+    passwd = args.password
+    passwd = (passwd == '-' and getpass.getpass()) or passwd
+    M.login(usernm, passwd)
+
+    print(to_json(fetch_result(M, args), args))
+
+    M.close()
+    M.logout()
+
+
+if __name__ == '__main__':
+    main()
