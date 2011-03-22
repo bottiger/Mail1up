@@ -55,13 +55,13 @@ def fetch_result(M, args):
         if folders[0] == 'OK':
             return [folder.decode() for folder in folders[1]]
 
-    mail_list = []
     if args.message_id is not None:
-        mail_list.append(fetch_mail(M, args.message_id, args.message_part))
+        return fetch_mail(M, args.message_id, args.message_part)
     else:
+        mail_list = []
         for num in data[0].split():
             mail_list.append(fetch_mail(M, num, args.message_part))
-    return mail_list
+        return mail_list
 
 
 def to_json(result, args):
