@@ -31,7 +31,6 @@ def unpack_argument(args):
 parser = ArgumentParser(description='IMAP wrapper.')
 for name, args in arguments:
     args = unpack_argument(args)
-    print(args)
     parser.add_argument(
         '--%s' % name,
         dest=name.replace('-', '_'),
