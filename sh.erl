@@ -1,25 +1,32 @@
 -module(sh).
--export([run/2, lines/1, write/2, write_line/2, test/0]).
+-export([run/2, line/1, lines/1, write/2, write_line/2, test/0]).
 
-lines(Port, ParLine, Lines) ->
+line(Port, Parts) ->
     receive
         {Port, {data, {eol, Line}}} ->
-            NewLines =
-                case Lines of
-                    [] -> [ParLine ++ Line];
-                    Ls -> [ParLine ++ Line | Ls]
-                end,
-            lines(Port, "", NewLines);
+            {line, string:join(lists:reverse([Line | Parts]), "")};
         {Port, {data, {noeol, Line}}} ->
-            lines(Port, ParLine ++ Line, Lines);
+            line(Port, [Line | Parts]);
         {Port, eof} ->
-            "" = ParLine,
+            [] = Parts,
+            eof
+    end.
+
+line(Port) ->
+    line(Port, "").
+
+
+lines(Port, Lines) ->
+    case line(Port) of
+        eof ->
             true = port_close(Port),
-            lists:reverse(Lines)
+            lists:reverse(Lines);
+        {line, Line} ->
+            lines(Port, [Line | Lines])
     end.
 
 lines(Port) ->
-    lines(Port, "", []).
+    lines(Port, []).
 
 write(Port, Data) ->
     true = port_command(Port, Data).
@@ -47,5 +54,5 @@ test() ->
     write_line(Port, "jmailbackup44@gmail.com"),
     write_line(Port, "qwerty60"),
     % Read output as lines
-    lines(Port).
+    line(Port).
 
