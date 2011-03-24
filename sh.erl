@@ -42,7 +42,7 @@ run(Exec, Args) ->
     Port = open_port(
             {spawn_executable, ExecPath},
             [{args, Args},
-             {line, 4096}, in, out, eof, hide]),
+             {line, 4096}, in, out, eof, use_stdio]),
     Port.
 
 
