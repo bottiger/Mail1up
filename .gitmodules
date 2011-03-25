@@ -1,3 +1,6 @@
 [submodule "erlang-json-eep-parser"]
 	path = erlang-json-eep-parser
 	url = git://github.com/jchris/erlang-json-eep-parser.git
+[submodule "s3erl"]
+	path = s3erl
+	url = git://github.com/Voker57/s3erl.git
