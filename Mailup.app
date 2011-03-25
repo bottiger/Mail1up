@@ -1,0 +1,13 @@
+{application, Mailup,
+  [{description,  An open source cloud based e-mail backup system},
+   {id,           1},
+   {vsn,          0.1},
+   {modules,      Modules},
+   {maxP,         MaxP},
+   {maxT,         MaxT},
+   {registered,   Names},
+   {included_applications, Apps},
+   {applications, Apps},
+   {env,          Env},
+   {mod,          Start},
+   {start_phases, Phases}]}.

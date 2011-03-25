@@ -4,3 +4,6 @@
 [submodule "s3erl"]
 	path = s3erl
 	url = git://github.com/Voker57/s3erl.git
+[submodule "ibrowse"]
+	path = ibrowse
+	url = git://github.com/cmullaparthi/ibrowse.git
