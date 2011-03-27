@@ -9,7 +9,6 @@ check(User, Pass, MsgID) when is_integer(MsgID) ->
     check(User, Pass, ["--message-id", integer_to_list(MsgID)]);
 
 check(User, Pass, MsgArgs) ->
-    code:add_path("erlang-json-eep-parser"),
     % Run python wrapper
     Port = sh:run("imap.py", ["--username", "-", "--password", "-"] ++ MsgArgs),
     % Write user and pass
