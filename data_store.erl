@@ -5,15 +5,16 @@
 %-spec load(string()) -> {ok, binary()} | {error, atom()}.
 
 load(Key) -> 
-    ibrowse:start(),
-    Credentials = #aws_credentials{ accessKeyId=minit:aws_key_id(), secretAccessKey=minit:aws_key() },
-    S3 = s3:new( Credentials ),
-    {_, Read} = S3:read_object( minit:aws_bucket(), [Key] ),
+    S3 = s3init(),
+    {_, Read} = S3:read_object( config:get(aws_bucket), [Key] ),
     [Read].
 
 save(Key, Data) ->
+    %Bucket = "mailbackupbottiger",
+    S3 = s3init(),
+    io:format("Writing object ~p~n", [S3:write_object( config:get(aws_bucket), Key, Data, "text/plain")] ).
+
+s3init() ->
     ibrowse:start(),
-    Bucket = "mailbackupbottiger",
-    Credentials = #aws_credentials{ accessKeyId=minit:aws_key_id(), secretAccessKey=minit:aws_key() },
-    S3 = s3:new( Credentials ),
-    io:format("Writing object ~p~n", [S3:write_object( Bucket, Key, Data, "text/plain")] ).
+    Credentials = #aws_credentials{ accessKeyId=config:get(aws_key_id), secretAccessKey=config:get(aws_secret_key) },
+    s3:new( Credentials ).
