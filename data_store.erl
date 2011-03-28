@@ -16,7 +16,7 @@ save(StorageKey, EncryptionKey, Data) ->
     CipherText = crypto:aes_ctr_encrypt(EncryptionKey, IV, zlib:gzip(Data)),
     StorageData = <<IV/binary, CipherText/binary>>,
     Md5 = hex:list_to_hex(binary_to_list(crypto:md5(StorageData))),
-    {_, Wrote} = S3:write_object(config:get(aws_bucket),
+    {ok, Wrote} = S3:write_object(config:get(aws_bucket),
                                  StorageKey, StorageData, "text/plain"),
     Wrote = "\"" ++ Md5 ++ "\"", % TODO: why is the md5 returned from s3 in qoutes?
     logger:info(["Wrote object: " ++ Wrote]).
