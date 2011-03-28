@@ -1,6 +1,6 @@
 -module(data_store).
--export([ivec/0, load/2, save/3]).
--include("/home/bottiger/dev/Mailup/s3erl/include/s3.hrl"). % For some reason this path is hard-coded. Didn't bother fix it
+-export([ivec/0, load/2, save/3, test/0]).
+-include("/home/jos/code/mailup/s3erl/include/s3.hrl"). % For some reason this path is hard-coded. Didn't bother fix it
 
 %-spec load(string()) -> {ok, binary()} | {error, atom()}.
 
@@ -15,8 +15,10 @@ save(StorageKey, EncryptionKey, Data) ->
     IV = ivec(),
     CipherText = crypto:aes_ctr_encrypt(EncryptionKey, IV, Data),
     StorageData = <<IV/binary, CipherText/binary>>,
+    Md5 = hex:list_to_hex(binary_to_list(crypto:md5(StorageData))),
     {_, Wrote} = S3:write_object(config:get(aws_bucket),
                                  StorageKey, StorageData, "text/plain"),
+    Wrote = "\"" ++ Md5 ++ "\"", % TODO: why is the md5 returned from s3 in qoutes?
     logger:info(["Wrote object: " ++ Wrote]).
 
 s3init() ->
@@ -33,5 +35,5 @@ ivec() -> crypto:rand_bytes(16).
 test() ->
     Data = <<"dette er jo en test hvor man tester ting.">>,
     Key = crypto:rand_bytes(32),
-    save("thisisatest", Key, Data),
-    load("thisisatest", Key) == Data.
+    save("thisisatest2", Key, Data),
+    load("thisisatest2", Key) == Data.
