@@ -1,6 +1,6 @@
 -module(data_store).
 -export([ivec/0, load/2, save/3]).
--include("/home/bottiger/dev/Mailup/s3erl/include/s3.hrl"). % For some reason this path is hard-coded. Didn't bother fix it
+-include("s3erl/include/s3.hrl"). % For some reason this path is hard-coded. Didn't bother fix it
 
 %-spec load(string()) -> {ok, binary()} | {error, atom()}.
 

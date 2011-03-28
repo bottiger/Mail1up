@@ -1,5 +1,5 @@
 -module(minit).
--export([boot/0, aws_key_id/0, aws_key/0, aws_bucket/0]).
+-export([boot/0]).
 
 boot() ->
     code:add_path("erlang-json-eep-parser"),
