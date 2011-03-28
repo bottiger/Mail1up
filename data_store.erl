@@ -4,23 +4,30 @@
 
 %-spec load(string()) -> {ok, binary()} | {error, atom()}.
 
-load(StorageKey, DecryptionKey) -> 
+load(StorageKey, DecryptionKey) ->
     S3 = s3init(),
-    {_, Read} = S3:read_object( config:get(aws_bucket), [StorageKey] ),
-    crypto:aes_ctr_decrypt(DecryptionKey, ivec(), Read).
+    {_, Read} = S3:read_object(config:get(aws_bucket), [StorageKey]),
+    <<IV:16/binary, CipherText/binary>> = list_to_binary(Read),
+    crypto:aes_ctr_decrypt(DecryptionKey, IV, CipherText).
 
 save(StorageKey, EncryptionKey, Data) ->
     S3 = s3init(),
-    CipherText = crypto:aes_ctr_encrypt(EncryptionKey, ivec(), Data),
-    {_, Wrote} = S3:write_object( config:get(aws_bucket), StorageKey, CipherText, "text/plain"),
-    logger:info(["Writing object: " ++ Wrote]).
+    IV = ivec(),
+    CipherText = crypto:aes_ctr_encrypt(EncryptionKey, IV, Data),
+    StorageData = <<IV/binary, CipherText/binary>>,
+    {_, Wrote} = S3:write_object(config:get(aws_bucket),
+                                 StorageKey, StorageData, "text/plain"),
+    logger:info(["Wrote object: " ++ Wrote]).
 
 s3init() ->
     ibrowse:start(),
-    Credentials = #aws_credentials{ accessKeyId=config:get(aws_key_id), secretAccessKey=config:get(aws_secret_key) },
+    Credentials = #aws_credentials{
+      accessKeyId=config:get(aws_key_id),
+      secretAccessKey=config:get(aws_secret_key)
+     },
     s3:new( Credentials ).
 
-ivec() -> crypto:md5(config:get(crypto_global_iv)). % md5 for convenience since it produces 128 bit. This should be enhanced.
+ivec() -> crypto:rand_bytes(16).
 
 
 test() ->
