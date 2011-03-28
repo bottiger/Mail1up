@@ -7,3 +7,6 @@
 [submodule "ibrowse"]
 	path = ibrowse
 	url = git://github.com/cmullaparthi/ibrowse.git
+[submodule "triq"]
+	path = triq
+	url = https://github.com/krestenkrab/triq.git

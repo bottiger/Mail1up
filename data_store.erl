@@ -15,8 +15,10 @@ save(StorageKey, EncryptionKey, Data) ->
     IV = ivec(),
     CipherText = crypto:aes_ctr_encrypt(EncryptionKey, IV, zlib:gzip(Data)),
     StorageData = <<IV/binary, CipherText/binary>>,
-    {_, Wrote} = S3:write_object(config:get(aws_bucket),
+    Md5 = hex:list_to_hex(binary_to_list(crypto:md5(StorageData))),
+    {ok, Wrote} = S3:write_object(config:get(aws_bucket),
                                  StorageKey, StorageData, "text/plain"),
+    Wrote = "\"" ++ Md5 ++ "\"", % TODO: why is the md5 returned from s3 in qoutes?
     logger:info(["Wrote object: " ++ Wrote]).
 
 s3init() ->
@@ -33,5 +35,5 @@ ivec() -> crypto:rand_bytes(16).
 test() ->
     Data = <<"dette er jo en test hvor man tester ting.">>,
     Key = crypto:rand_bytes(32),
-    save("thisisatest", Key, Data),
-    load("thisisatest", Key) == Data.
+    save("thisisatest2", Key, Data),
+    load("thisisatest2", Key) == Data.
