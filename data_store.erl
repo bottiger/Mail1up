@@ -22,3 +22,9 @@ s3init() ->
 
 ivec() -> crypto:md5(config:get(crypto_global_iv)). % md5 for convenience since it produces 128 bit. This should be enhanced.
 
+
+test() ->
+    Data = <<"dette er jo en test hvor man tester ting.">>,
+    Key = crypto:rand_bytes(32),
+    save("thisisatest", Key, Data),
+    load("thisisatest", Key) == Data.
