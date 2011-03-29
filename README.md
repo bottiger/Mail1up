@@ -9,4 +9,4 @@ Start by running minit:boot() for adding some paths.
 Requirements
 ============
 
-This was written in Erlang R14B02 and will not working in older version.
+This was written in Erlang R14B02 and will not work in any older version.
