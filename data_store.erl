@@ -8,7 +8,7 @@ load(StorageKey, DecryptionKey) ->
     S3 = s3init(),
     {_, Read} = S3:read_object(config:get(aws_bucket), [StorageKey]),
     <<IV:16/binary, CipherText/binary>> = list_to_binary(Read),
-    zlib:gunzip(crypto:aes_ctr_decrypt(DecryptionKey, IV, CipherText)).
+    {ok, zlib:gunzip(crypto:aes_ctr_decrypt(DecryptionKey, IV, CipherText))}.
 
 save(StorageKey, EncryptionKey, Data) ->
     S3 = s3init(),
