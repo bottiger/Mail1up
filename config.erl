@@ -42,7 +42,7 @@ handle_cast(shutdown, Cfg) ->
     {stop, normal, Cfg}.
 
 handle_call({get_key, Key}, _From, Cfg) ->
-    Value = get_key(Key, Cfg),
+    {ok, Value} = erl_parser:find(Key, Cfg),
     {reply, Value, Cfg}.
 
 handle_info(_Info, Cfg) ->
@@ -63,6 +63,3 @@ read() ->
     {ok, Cfg} = file:consult("application.cfg"),
     Cfg.
 
-get_key(_Key, []) -> {error, not_found};
-get_key(Key, [{Key, Value} | _Config]) -> Value; %{ok, Value};
-get_key(Key, [{_Other, _Value} | Config]) -> get_key(Key, Config).
