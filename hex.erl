@@ -1,6 +1,7 @@
 -module(hex).
 -export([list_to_hex/1, hex_to_list/1]).
--include_lib("triq/include/triq.hrl").
+
+%-include_lib("proper/include/proper.hrl").
 
 
 hex(N) when N < 10 ->
@@ -32,15 +33,16 @@ hex_to_list(H) ->
 
 
 % hex is 0-9,a-f
-prop_alphabet() ->
-    ?FORALL({X}, {list(choose(0,255))},
-            lists:all(fun(I) -> (($0 =< I) and (I =< $9))
-                                    or (($a =< I) and (I =< $f)) end,
-                      list_to_hex(X))).
+%% prop_alphabet() ->
+%%     ?FORALL(X, list(integer(0,255)),
+%%             lists:all(fun(I) -> (($0 =< I) and (I =< $9))
+%%                                     or (($a =< I) and (I =< $f)) end,
+%%                       list_to_hex(X))
+%%            ).
 
 % hex_to_list(list_to_hex(X)) == X
-prop_identity() ->
-   ?FORALL({X}, {list(elements(lists:seq($0, $9) ++ lists:seq($a, $f)))},
-           begin
-               hex_to_list(list_to_hex(X)) == X
-           end).
+%% prop_identity() ->
+%%    ?FORALL(X, list(union(range($0, $9), range($a, $f))),
+%%            begin
+%%                hex_to_list(list_to_hex(X)) == X
+%%            end).
