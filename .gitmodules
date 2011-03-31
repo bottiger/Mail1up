@@ -10,3 +10,6 @@
 [submodule "triq"]
 	path = triq
 	url = https://github.com/krestenkrab/triq.git
+[submodule "proper"]
+	path = proper
+	url = https://github.com/etrepum/proper.git
