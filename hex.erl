@@ -1,5 +1,5 @@
 -module(hex).
--export([list_to_hex/1, hex_to_list/1]).
+-export([list_to_hex/1, hex_to_list/1, int_to_hex/1]).
 
 %-include_lib("proper/include/proper.hrl").
 
