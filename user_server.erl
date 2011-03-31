@@ -2,7 +2,7 @@
 -behaviour(gen_server).
 
 %% Server API
--export([start_link/2, stop/0]).
+-export([start_link/1, stop/0]).
 
 %% Client API
 -export([get/1, set/2]).
@@ -16,9 +16,9 @@
 %% Server API
 %%====================================================================
 
-start_link(Username, Password) ->
-    Result = gen_server:start_link({local, ?SERVER}, ?MODULE, {Username, Password}, []),
-    logger:notice("Started User server"),
+start_link(Username) ->
+    logger:notice("Starting User server: " ++ Username),
+    Result = gen_server:start_link({local, ?SERVER}, ?MODULE, Username, []),
     Result.
 
 stop() ->
@@ -29,66 +29,69 @@ stop() ->
 %%====================================================================
 
 get(Key) ->
-    gen_server:call(?SERVER, {user_prop, [], []}).
+    gen_server:call(?SERVER, {get, [], []}).
 
-set(Key, Value) -> Value.
+set(Key, Value) -> 
+    gen_server:call(?SERVER, {set, Value, []}).
 
 %%====================================================================
 %% gen_server callbacks
 %%====================================================================
 
-init({Username, Password}) ->
-    process_s3_data(Username, Password, data_store:load(Username ++ ".json", user_encryption_key(Username, Password))).
+init(Username) ->
+    logger:notice("Started User server: " ++ Username),
+    Data = try
+        data_store:load(Username ++ ".json", encryption_key())
+    catch
+        _:_ -> []
+    end,
+    process_s3_data(Username, Data).
 
-handle_cast(shutdown, Cfg) ->
-    {stop, normal, Cfg}.
+handle_cast(shutdown, User) ->
+    {stop, normal, User}.
 
-handle_call({user_prop, User, Key}, _From, Cfg) ->
-    %
-    % Loopup user thread or create new.
-    %
-    Value = 1,
-    {reply, Value, Cfg}.
+handle_call({get, Key}, _From, User) ->
+    Value = dict:fetch(Key,User),
+    {reply, Value, User};
 
-handle_info(_Info, Cfg) ->
-    {noreply, Cfg}.
+handle_call({set, Key, Value}, _From, User) ->
+    NewUser = dict:store(Key,Value,User),
+    {reply, ok, NewUser}.
+
+handle_info(_Info, User) ->
+    {noreply, User}.
 
 terminate(_Reason, _State) ->
     logger:notice("User server is terminating"),
     ok.
 
-code_change(_OldVsn, Cfg, _Extra) ->
-    {ok, Cfg}.
+code_change(_OldVsn, User, _Extra) ->
+    {ok, User}.
 
 %%====================================================================
 %% Internal functions
 %%====================================================================
 
 
-process_s3_data(Username, Password, {ok, Data}) -> {ok, json_eep:json_to_term(Data)};
-process_s3_data(Username, Password, {s3error,"NoSuchKey",ErrorMsg}) -> 
+process_s3_data(Username, {ok, Data}) -> {ok, term_to_binary(Data)};
+process_s3_data(Username, []) -> 
     logger:info("Creating new user: " ++ Username),
-    New_user = new_user(Username, Password),
-    data_store:save(Username, user_encryption_key(Username, Password), New_user),
-    New_user.
+    New_user = new_user(Username),
+    data_store:save(Username, encryption_key(), New_user),
+    {ok, New_user}.
 
-%
-% NOT FINISHED!
-%
-user_encryption_key(Username, Password) ->
-    Userpass = user_namepass_concat(Username, Password),
-    crypto:sha(Userpass ++ hex:hex_to_list(crypto:sha(Userpass))).
-
-user_namepass_concat(Username, Password) ->
-    Username ++ Password.
+encryption_key() ->
+    hex:hexstr_to_bin("90B340950A1510CF1196AACFBB3F15B0E62CFD03574279A0E51B1ED629B510F2").
 
 password_hash(Password, Salt) ->
     crypto:sha(Password ++ Salt).
 
-new_user(Username, Password) -> 
-    Salt = hex:hex_to_list(crypto:rand_bytes(16)),
-    User0 = [],
-    User1 = lists:append(User0,[{username,Username}]),
-    User2 = lists:append(User1,[{password,password_hash(Password, Salt)}]),
-    User3 = lists:append(User2,[salt,Salt]),
-    User3.
+new_user(Username) -> 
+    Salt = hex:bin_to_hexstr(crypto:rand_bytes(16)),
+    User = dict:new(),
+    User1 = dict:store("username",Username,User),
+    User2 = dict:store("salt",Salt,User1),
+    term_to_binary(User2). % FIXME - potential unsecure
+    
+
+

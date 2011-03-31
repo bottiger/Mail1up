@@ -2,7 +2,7 @@
 -export([ivec/0, load/2, save/3, test/0]).
 -include("s3erl/include/s3.hrl"). % For some reason this path is hard-coded. Didn't bother fix it
 
-%-spec load(string()) -> {ok, binary()} | {error, atom()}.
+%-spec save(string(), binary(), binary()) -> {ok, binary()} | {error, atom()}.
 
 load(StorageKey, DecryptionKey) ->
     S3 = s3init(),

@@ -10,3 +10,6 @@
 [submodule "triq"]
 	path = triq
 	url = https://github.com/krestenkrab/triq.git
+[submodule "eep0018"]
+	path = eep0018
+	url = https://github.com/davisp/eep0018.git

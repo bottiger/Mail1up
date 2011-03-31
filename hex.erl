@@ -1,7 +1,6 @@
 -module(hex).
 -export([list_to_hex/1, hex_to_list/1]).
--include_lib("triq/include/triq.hrl").
-
+-export([bin_to_hexstr/1,hexstr_to_bin/1]).
 
 hex(N) when N < 10 ->
     $0 + N;
@@ -30,17 +29,18 @@ hex_to_list([A, B | Tail], L) ->
 hex_to_list(H) ->
     hex_to_list(H, "").
 
+%
+% http://necrobious.blogspot.com/2008/03/binary-to-hex-string-back-to-binary-in.html
+%
 
-% hex is 0-9,a-f
-prop_alphabet() ->
-    ?FORALL({X}, {list(choose(0,255))},
-            lists:all(fun(I) -> (($0 =< I) and (I =< $9))
-                                    or (($a =< I) and (I =< $f)) end,
-                      list_to_hex(X))).
+bin_to_hexstr(Bin) ->
+  lists:flatten([io_lib:format("~2.16.0B", [X]) ||
+    X <- binary_to_list(Bin)]).
 
-% hex_to_list(list_to_hex(X)) == X
-prop_identity() ->
-   ?FORALL({X}, {list(elements(lists:seq($0, $9) ++ lists:seq($a, $f)))},
-           begin
-               hex_to_list(list_to_hex(X)) == X
-           end).
+hexstr_to_bin(S) ->
+  hexstr_to_bin(S, []).
+hexstr_to_bin([], Acc) ->
+  list_to_binary(lists:reverse(Acc));
+hexstr_to_bin([X,Y|T], Acc) ->
+  {ok, [V], []} = io_lib:fread("~16u", [X,Y]),
+  hexstr_to_bin(T, [V | Acc]).
