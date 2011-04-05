@@ -73,7 +73,7 @@ code_change(_OldVsn, User, _Extra) ->
 %%====================================================================
 
 
-process_s3_data(Username, {ok, Data}) -> {ok, term_to_binary(Data)};
+process_s3_data(Username, {ok, Data}) -> {ok, json:json_to_term(Data)};
 process_s3_data(Username, []) -> 
     logger:info("Creating new user: " ++ Username),
     New_user = new_user(Username),
@@ -81,7 +81,7 @@ process_s3_data(Username, []) ->
     {ok, New_user}.
 
 encryption_key() ->
-    hex:hexstr_to_bin("90B340950A1510CF1196AACFBB3F15B0E62CFD03574279A0E51B1ED629B510F2").
+    config:get(crypto_bootstrap).
 
 password_hash(Password, Salt) ->
     crypto:sha(Password ++ Salt).
@@ -91,7 +91,7 @@ new_user(Username) ->
     User = dict:new(),
     User1 = dict:store("username",Username,User),
     User2 = dict:store("salt",Salt,User1),
-    term_to_binary(User2). % FIXME - potential unsecure
+    json:term_to_json(User2).
     
 
 
