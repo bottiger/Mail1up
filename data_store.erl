@@ -10,6 +10,12 @@ load(StorageKey, DecryptionKey) ->
     <<IV:16/binary, CipherText/binary>> = list_to_binary(Read),
     {ok, zlib:gunzip(crypto:aes_ctr_decrypt(DecryptionKey, IV, CipherText))}.
 
+save(StorageKey, EncryptionKey, Data) when is_list(Data) ->
+    save(StorageKey, EncryptionKey, list_to_binary(Data));
+
+save(StorageKey, EncryptionKey, Data) when is_list(EncryptionKey) ->
+    save(StorageKey, hex:hexstr_to_bin(EncryptionKey), Data);
+
 save(StorageKey, EncryptionKey, Data) ->
     S3 = s3init(),
     IV = ivec(),

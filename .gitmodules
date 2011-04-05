@@ -10,3 +10,6 @@
 [submodule "erlang-json-parser"]
 	path = erlang-json-parser
 	url = git@github.com:bottiger/erlang-json-parser.git
+[submodule "gproc"]
+	path = gproc
+	url = https://github.com/uwiger/gproc.git
