@@ -5,4 +5,4 @@
 {aws_secret_key, "AMAZON S3 SECRET KEY"}.
 {aws_bucket, "mailbackupbottiger"}.
 
-{crypto_global_iv, "QMT7KUwzfaMyJQ4QSM1JxmTWXPR9RSdIuYr94"}.
+{crypto_bootstrap, "XXX"}.
