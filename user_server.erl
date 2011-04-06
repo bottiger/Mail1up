@@ -27,13 +27,14 @@ stop(Username) ->
 %%====================================================================
 
 get(Username, Key) ->
-    ServerPid = await_server(Username),
     logger:notice("user_server:get(). ServerPid: ??"),
-    gen_server:call(ServerPid, {get, Key}).
+    gen_server:call(server_pid(Username), {get, Key}).
 
 set(Username, Key, Value) -> 
-    ServerPid = await_server(Username),
-    gen_server:call(ServerPid, {set, Key, Value}).
+    gen_server:call(server_pid(Username), {set, Key, Value}).
+
+store(Username) ->
+   gen_server:call(server_pid(Username), {store}). 
 
 %%====================================================================
 %% gen_server callbacks
@@ -46,7 +47,7 @@ init(Username) ->
     logger:notice("Started User server: " ++ Username),
     register_server(Username),
     Data = try
-        {ok, DataLoad} = data_store:load(Username, encryption_key()),
+        {ok, DataLoad} = data_store:load(Username, user:encryption_key()),
         {ok, DataTerm} = json:json_to_term(DataLoad),
         DataTerm
     catch
@@ -71,8 +72,11 @@ handle_call({get, Key}, _From, User) ->
 handle_call({set, Key, Value}, _From, User) ->
     NewUser = dict:store(Key,Value,User),
     logger:debug("Created NewUser"),
-    store_user(NewUser),
-    {reply, ok, NewUser}.
+    {reply, ok, NewUser};
+
+handle_call({store}, _From, User) ->
+    user:store(User),
+    {reply, ok, User}.
 
 %% @doc Unimplemented
 %% @end
@@ -103,42 +107,22 @@ lookup_server(ID) ->
 await_server(ID) ->
     mail1up_utils:await(server_name(ID)).
 
-%% tag server names thos way
 server_name(ID) ->
-    {userserver, ID, servertype}.
+    {userserver, ID}.
 
+server_pid(ID) ->
+     await_server(ID).
 
 %%
 %% Should be refactored into another module
 %%
 
-process_s3_data(Username, {ok, Data}) -> {ok, json:json_to_term(Data)};
+process_s3_data(Username, {ok, Data}) -> {ok, Data};
 process_s3_data(Username, []) -> 
     logger:info("Creating new user: " ++ Username),
-    {ok, NewUser} = new_user(Username),
+    {ok, NewUser} = user:create(Username),
     {ok, UserJson} =  json:term_to_json(NewUser),
-    %io:format("json: ~w~n", UserJson),
-    data_store:save(Username, encryption_key(), UserJson),
+    data_store:save(Username, user:encryption_key(), UserJson),
     {ok, NewUser}.
-
-encryption_key() ->
-    config:get(crypto_bootstrap).
-
-password_hash(Password, Salt) ->
-    crypto:sha(Password ++ Salt).
-
-new_user(Username) -> 
-    Salt = hex:bin_to_hexstr(crypto:rand_bytes(16)),
-    User = dict:new(),
-    User1 = dict:store("username",Username,User),
-    User2 = dict:store("salt",Salt,User1),
-    {ok, User2}.
-    
-store_user(Data) -> 
-    Username = dict:fetch("username",Data),
-    logger:info("Updating user data for username: " ++ Username),
-    {ok, JsonData} =  json:term_to_json(Data),
-    data_store:save(Username, encryption_key(), JsonData),
-    {ok, Data}.
 
 
