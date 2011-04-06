@@ -2,13 +2,19 @@
 -export([ivec/0, load/2, save/3, test/0]).
 -include("s3erl/include/s3.hrl"). % For some reason this path is hard-coded. Didn't bother fix it
 
-%-spec load(string()) -> {ok, binary()} | {error, atom()}.
+%-spec save(string(), binary(), binary()) -> {ok, binary()} | {error, atom()}.
 
 load(StorageKey, DecryptionKey) ->
     S3 = s3init(),
     {_, Read} = S3:read_object(config:get(aws_bucket), [StorageKey]),
     <<IV:16/binary, CipherText/binary>> = list_to_binary(Read),
-    zlib:gunzip(crypto:aes_ctr_decrypt(DecryptionKey, IV, CipherText)).
+    {ok, zlib:gunzip(crypto:aes_ctr_decrypt(DecryptionKey, IV, CipherText))}.
+
+save(StorageKey, EncryptionKey, Data) when is_list(Data) ->
+    save(StorageKey, EncryptionKey, list_to_binary(Data));
+
+save(StorageKey, EncryptionKey, Data) when is_list(EncryptionKey) ->
+    save(StorageKey, hex:hexstr_to_bin(EncryptionKey), Data);
 
 save(StorageKey, EncryptionKey, Data) ->
     S3 = s3init(),

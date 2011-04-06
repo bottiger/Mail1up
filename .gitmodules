@@ -1,15 +1,15 @@
-[submodule "erlang-json-eep-parser"]
-	path = erlang-json-eep-parser
-	url = git://github.com/jchris/erlang-json-eep-parser.git
 [submodule "s3erl"]
 	path = s3erl
 	url = git://github.com/Voker57/s3erl.git
 [submodule "ibrowse"]
 	path = ibrowse
 	url = git://github.com/cmullaparthi/ibrowse.git
-[submodule "triq"]
-	path = triq
-	url = https://github.com/krestenkrab/triq.git
 [submodule "proper"]
 	path = proper
 	url = https://github.com/etrepum/proper.git
+[submodule "erlang-json-parser"]
+	path = erlang-json-parser
+	url = git@github.com:bottiger/erlang-json-parser.git
+[submodule "gproc"]
+	path = gproc
+	url = https://github.com/uwiger/gproc.git

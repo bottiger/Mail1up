@@ -10,13 +10,14 @@
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
+-define(SERVER, config).
 %%====================================================================
 %% Server API
 %%====================================================================
 
 start_link() ->
     Result = gen_server:start_link({local, ?SERVER}, ?MODULE, [], []),
-    logger:notice("Started Config server~n"),
+    logger:notice("Started Config server"),
     Result.
 
 stop() ->
@@ -57,7 +58,8 @@ code_change(_OldVsn, Cfg, _Extra) ->
 %% Internal functions
 %%====================================================================
 
-read() -> 
+read() ->
+    %logger:notice("config.erl: Reading application.cfg"), 
     {ok, Cfg} = file:consult("application.cfg"),
     Cfg.
 
