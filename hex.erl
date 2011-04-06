@@ -1,5 +1,5 @@
 -module(hex).
--export([list_to_hex/1, hex_to_list/1, int_to_hex/1]).
+-export([list_to_hex/1, hex_to_list/1, int_to_hex/1, hex_to_int/1]).
 
 %-include_lib("proper/include/proper.hrl").
 
@@ -18,6 +18,9 @@ unhex(C) when $a =< C, C =< $f ->
 
 int_to_hex(N) when N < 256 ->
     [hex(N div 16), hex(N rem 16)].
+
+hex_to_int(H) ->
+    0.
 
 
 list_to_hex(L) when is_list(L) ->
