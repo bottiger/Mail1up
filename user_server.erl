@@ -16,7 +16,7 @@
 
 start_link(Username) ->
     logger:notice("Starting User server: " ++ Username),
-    Result = gen_server:start_link({local, list_to_atom(Username)}, user_server, Username, []),
+    Result = gen_server:start_link(user_server, Username, []),
     Result.
 
 stop(Username) ->
@@ -27,45 +27,66 @@ stop(Username) ->
 %%====================================================================
 
 get(Username, Key) ->
-    gen_server:call(Username, {get, Key}).
+    ServerPid = await_server(Username),
+    logger:notice("user_server:get(). ServerPid: ??"),
+    gen_server:call(ServerPid, {get, Key}).
 
 set(Username, Key, Value) -> 
-    gen_server:call(Username, {set, Key, Value}).
+    ServerPid = await_server(Username),
+    gen_server:call(ServerPid, {set, Key, Value}).
 
 %%====================================================================
 %% gen_server callbacks
 %%====================================================================
 
+%% @doc Creates a process for a user. If the user exists his/her data
+%% is retrived. If not a new stub user is created.
+%% @end
 init(Username) ->
     logger:notice("Started User server: " ++ Username),
+    register_server(Username),
     Data = try
-        json:json_to_term(data_store:load(Username, encryption_key()))
+        {ok, DataLoad} = data_store:load(Username, encryption_key()),
+        {ok, DataTerm} = json:json_to_term(DataLoad),
+        DataTerm
     catch
         _:_ -> []
     end,
     %logger:notice("loaded data: ~w~n", Data),
     User =  process_s3_data(Username, Data),
-    {ok, User}.
+    User.
 
 handle_cast(shutdown, User) ->
     {stop, normal, User}.
 
+%% @doc Looks up the value coresponding Key in the user dictonary
+%% @end
 handle_call({get, Key}, _From, User) ->
     logger:debug("user_server:get called"),
     Value = dict:fetch(Key,User),
     {reply, Value, User};
 
+%% @doc Adds a Key/Value pair to the User dictonary
+%% @end
 handle_call({set, Key, Value}, _From, User) ->
-    {ok, NewUser} = store_user(dict:store(Key,Value,User)),
+    NewUser = dict:store(Key,Value,User),
+    logger:debug("Created NewUser"),
+    store_user(NewUser),
     {reply, ok, NewUser}.
 
+%% @doc Unimplemented
+%% @end
 handle_info(_Info, User) ->
     {noreply, User}.
 
+%% @doc Is executed when the process is terminated. With or without intend
+%% @end
 terminate(_Reason, _State) ->
     logger:notice("User server is terminating"),
     ok.
 
+%% @doc Not implemented
+%% @end
 code_change(_OldVsn, User, _Extra) ->
     {ok, User}.
 
@@ -73,6 +94,23 @@ code_change(_OldVsn, User, _Extra) ->
 %% Internal functions
 %%====================================================================
 
+register_server(ID) ->
+    mail1up_utils:register(server_name(ID)).
+
+lookup_server(ID) ->
+    mail1up_utils:lookup(server_name(ID)).
+
+await_server(ID) ->
+    mail1up_utils:await(server_name(ID)).
+
+%% tag server names thos way
+server_name(ID) ->
+    {userserver, ID, servertype}.
+
+
+%%
+%% Should be refactored into another module
+%%
 
 process_s3_data(Username, {ok, Data}) -> {ok, json:json_to_term(Data)};
 process_s3_data(Username, []) -> 
@@ -99,7 +137,8 @@ new_user(Username) ->
 store_user(Data) -> 
     Username = dict:fetch("username",Data),
     logger:info("Updating user data for username: " ++ Username),
-    data_store:save(Username, encryption_key(), json:term_to_json(Data)),
+    {ok, JsonData} =  json:term_to_json(Data),
+    data_store:save(Username, encryption_key(), JsonData),
     {ok, Data}.
 
 
