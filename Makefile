@@ -1,8 +1,7 @@
-main:	clean
-	erlc -o ebin *.erl
+main:
+	./rebar compile
 
 clean:
-	mkdir -p ebin
-	rm -f ebin/*
+	./rebar clean
 
 VERSION=Mailup-0.1
