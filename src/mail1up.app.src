@@ -1,0 +1,12 @@
+{application, mail1up,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { mail1up_app, []}},
+  {env, []}
+ ]}.
