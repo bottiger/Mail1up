@@ -27,6 +27,7 @@ stop() ->
 %% Client API
 %%====================================================================
 
+-spec get(atom()) -> list().
 get(Key) ->
     gen_server:call(?SERVER, {get_key, Key}).
 
@@ -58,8 +59,9 @@ code_change(_OldVsn, Cfg, _Extra) ->
 %% Internal functions
 %%====================================================================
 
+-spec read() -> list().
 read() ->
-    %logger:notice("config.erl: Reading application.cfg"), 
+    logger:notice("config.erl: Reading application.cfg"), 
     {ok, Cfg} = file:consult("application.cfg"),
     Cfg.
 
