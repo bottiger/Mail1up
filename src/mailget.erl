@@ -1,6 +1,9 @@
 -module(mailget).
 -export([check/0, check/1, check/2, check/3]).
 
+
+-spec check() -> term().
+
 check() -> check("").
 check(MsgID) -> check("jmailbackup44@gmail.com", "qwerty60", MsgID).
 check(User, Pass) -> check(User, Pass, "").
@@ -18,6 +21,6 @@ check(User, Pass, MsgArgs) ->
     Lines = sh:lines(Port),
     % First line is JSON
     MailOut = lists:nth(1, Lines),
-    json_eep:json_to_term(MailOut).
+    json:json_to_term(MailOut).
 
 

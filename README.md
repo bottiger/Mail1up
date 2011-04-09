@@ -15,3 +15,9 @@ Licence
 =======
 
 Everything is licenced under AGPLv3. See the LICENCE file for details
+
+
+Acknowledgements
+================
+
+Jesper Louis Andersen of the ETORRENT project (https://github.com/jlouis/etorrent).
