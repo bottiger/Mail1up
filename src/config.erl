@@ -49,7 +49,7 @@ handle_info(_Info, Cfg) ->
     {noreply, Cfg}.
 
 terminate(_Reason, _State) ->
-    logger:notice("Config server is terminating~n"),
+    %logger:notice("Config server is terminating~n"),
     ok.
 
 code_change(_OldVsn, Cfg, _Extra) ->
@@ -61,7 +61,7 @@ code_change(_OldVsn, Cfg, _Extra) ->
 
 -spec read() -> list().
 read() ->
-    logger:notice("config.erl: Reading application.cfg"), 
+    %logger:notice("config.erl: Reading application.cfg"), 
     {ok, Cfg} = file:consult("application.cfg"),
     Cfg.
 

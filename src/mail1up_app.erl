@@ -10,6 +10,7 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
+    application:start(gproc),
     mail1up_sup:start_link().
 
 stop(_State) ->

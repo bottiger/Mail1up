@@ -4,7 +4,7 @@ This app will (at some point in the future) backup your e-mail by pulling from t
 
 Use
 ===
-Start by running minit:boot() for adding some paths, and starting the necessary servers.
+Start by running `application:start(mail1up)`.
 
 Requirements
 ============
