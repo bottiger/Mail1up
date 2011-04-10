@@ -17,7 +17,7 @@
 
 start_link() ->
     Result = gen_server:start_link({local, ?SERVER}, ?MODULE, [], []),
-    logger:notice("Started Config server"),
+    %logger:notice("Started Config server"),
     Result.
 
 stop() ->
