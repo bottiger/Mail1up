@@ -12,7 +12,6 @@
 start(_StartType, _StartArgs) ->
     application:start(gproc),
     mail1up_sup:start_link().
-    %gen_event:add_handler(gen_logger, logger, []).
 
 stop(_State) ->
     ok.
