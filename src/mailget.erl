@@ -9,25 +9,39 @@ list_folders(User, Pass) ->
     {ok, ImapFolders} = imappy(User, Pass, ["--list-folders"]),
     lists:map(fun(X) -> lists:last(string:tokens(binary:bin_to_list(X), "\"")) end, ImapFolders).
     
--spec mail_id(string(), string(), integer()) -> list(string()).
-mail_id(User, Pass, Id, Folder) ->
-    {ok, MailDict} = imappy(User, Pass, ["--message-id", integer_to_list(Id), "--folder", Folder]),
-    %tring:tokens(binary:bin_to_list(Mail), "\r\n").
-    NewMailDict = dict:new(),
-    dict:map(fun(K, V) -> dict:store(binary:bin_to_list(K), binary:bin_to_list(V), NewMailDict) end, MailDict),
-    NewMailDict.
-
-%-spec mail_id(string(), string(), integer()) -> 
+%-spec mail_id(string(), string(), integer()) -> list(string()). 
 mail_id(User, Pass, Id) ->
     mail_id(User, Pass, Id, "INBOX").
 
-mail_header_id(User, Pass, Id) ->
-    ok.
+%-spec mail_id(string(), string(), integer(), string()) -> list(string()).
+mail_id(User, Pass, Id, Folder) ->
+    {ok, MailDict} = imappy(User, Pass, ["--message-id", integer_to_list(Id), "--folder", Folder]),
+    %string:tokens(binary:bin_to_list(Mail), "\r\n").
+    parse_mail_dict(MailDict).
 
+mail_header_id(User, Pass, Id) ->
+    {ok, MailDict} = imappy(User, Pass, ["--message-id", integer_to_list(Id), "--headers-only"]),
+    parse_mail_dict(MailDict).
+
+%% @doc Returns the e-mail headers of the mail with Id as a Dict
+%% @end
+mail_header_id_dict(User, Pass, Id) ->
+    MailDict = mail_header_id(User, Pass, Id),
+    HeaderString = dict:fetch("content", MailDict),
+    HeaderList = string:tokens(HeaderString, "\r\n"), % Gmail uses \r\n instead of \n. What should we split at?
+    dict:from_list(lists:map(fun(X) -> 
+                Parts = string:tokens(X,":"),
+                Key = lists:nth(1, Parts),
+                Value = string:strip(string:join(lists:nthtail(1, Parts), ":")),
+                {Key, Value}
+              end, HeaderList)).
+
+%-spec parse_mail_dict(dict()) -> dict().
 parse_mail_dict(MailDict) ->
-    NewMailDict = dict:new(),
-    dict:map(fun(K, V) -> dict:store(binary:bin_to_list(K), binary:bin_to_list(V), NewMailDict) end, MailDict),
-    NewMailDict.
+    % Converts MailDict from a Dict of <<"binaries">> th utf-8">> into a dict of "utf8 strings"
+    dict:fold(fun(K, V, AccIn) -> dict:store(unicode:characters_to_list(K), unicode:characters_to_list(V), AccIn) end, dict:new(), MailDict).
+
+
 
 -spec check() -> term().
 check() -> check("").
