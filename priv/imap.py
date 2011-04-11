@@ -47,8 +47,8 @@ def fetch_mail(M, msg_id, msg_part):
 def fetch_result(M, args):
     ''' Fetch result as specified in args '''
     M.select(args.folder, "true")
-    #typ, data = M.search(None, 'ALL')
-    typ, data = M.search(None, 'AFTER', '"01-Jan-2010"')
+    typ, data = M.search(None, 'ALL')
+    #typ, data = M.search(None, 'AFTER', '"01-Jan-2010"')
 
     if args.list_folders:
         folders = M.list()
