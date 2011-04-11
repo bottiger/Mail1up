@@ -11,7 +11,7 @@ arguments = [
     ('password', dict(default='qwerty60')),
     ('host', dict(default='imap.gmail.com')),
     ('folder', dict(default='INBOX')),
-    ('after', dict(type=str)),
+    ('after', dict(type=str)), # 01-Nov-2010
     ('headers-only', dict(default=False, action='store_const', const=True)),
     ('humanize', dict(default=False, action='store_const', const=True)),
     ('message-id', dict(type=int)),
@@ -47,8 +47,7 @@ def fetch_mail(M, msg_id, msg_part):
 def fetch_result(M, args):
     ''' Fetch result as specified in args '''
     M.select(args.folder, "true")
-    typ, data = M.search(None, 'ALL')
-    #typ, data = M.search(None, 'AFTER', '"01-Jan-2010"')
+    typ, data = M.search(None, args.message_since)
 
     if args.list_folders:
         folders = M.list()
@@ -80,6 +79,11 @@ def main():
     if args.headers_only:
         message_part = 'HEADER'
     setattr(args, 'message_part', message_part)
+
+    message_since = 'ALL'
+    if args.after:
+        message_since = '(SINCE "' + args.after  + '")'
+    setattr(args, 'message_since', message_since)
 
     # Init mailbox
     M = imaplib.IMAP4_SSL(args.host)
