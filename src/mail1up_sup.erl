@@ -24,8 +24,10 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, [
-        ?CHILD(config, worker),
-        ?CHILD(logger, worker)
-            ]} }.
+    {ok, { {one_for_one, 5, 10},
+           [
+            ?CHILD(config, worker),
+            ?CHILD(logger, worker)
+           ]}
+    }.
 
