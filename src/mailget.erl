@@ -17,7 +17,8 @@ mail_id(User, Pass, Id) ->
 
 %-spec mail_id(string(), string(), integer(), string()) -> list(string()).
 mail_id(User, Pass, Id, Folder) ->
-    {ok, MailDict} = imappy(User, Pass, ["--message-id", integer_to_list(Id), "--folder", Folder]),
+    {ok, MailDict} = imappy(User, Pass,
+                            ["--message-id", integer_to_list(Id), "--folder", Folder]),
     parse_mail_dict(MailDict).
 
 %% @doc Return the raw header of the mail with id=ID
@@ -32,7 +33,7 @@ mail_header_id_dict(User, Pass, Id) ->
     MailDict = mail_header_id(User, Pass, Id),
     HeaderString = dict:fetch("content", MailDict),
     HeaderList = string:tokens(HeaderString, "\r\n"), % Gmail uses \r\n instead of \n. What should we split at?
-    dict:from_list(lists:map(fun(X) -> 
+    dict:from_list(lists:map(fun(X) ->
                 Parts = string:tokens(X,":"),
                 Key = lists:nth(1, Parts),
                 Value = string:strip(string:join(lists:nthtail(1, Parts), ":")),
@@ -44,7 +45,10 @@ mail_header_id_dict(User, Pass, Id) ->
 %% @doc Converts MailDict from a Dict of <<"binaries">> th utf-8">> into a dict of "utf8 strings"
 %% @end
 parse_mail_dict(MailDict) ->
-    dict:fold(fun(K, V, AccIn) -> dict:store(unicode:characters_to_list(K), unicode:characters_to_list(V), AccIn) end, dict:new(), MailDict).
+    dict:fold(fun(K, V, AccIn) -> dict:store(
+                                    unicode:characters_to_list(K),
+                                    unicode:characters_to_list(V), AccIn) end,
+              dict:new(), MailDict).
 
 -spec check() -> term().
 check() -> check("").
@@ -62,7 +66,7 @@ imappy(User, Pass, MsgArgs) ->
     % Run python wrapper
     PortArgs = ["--username", "-", "--password", "-"] ++ MsgArgs,
     logger:notice(PortArgs),
-    Port = sh:run("priv/imap.py", PortArgs),
+    Port = sh:run("lib/mail1up-1/priv/imap.py", PortArgs),
     % Write user and pass
     sh:write_line(Port, User),
     sh:write_line(Port, Pass),
