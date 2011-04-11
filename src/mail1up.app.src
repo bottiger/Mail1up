@@ -2,6 +2,10 @@
  [
   {description, ""},
   {vsn, "1"},
+  {modules, [
+             mail1up_app,
+             mail1up_sub
+             ]},
   {registered, []},
   {applications, [
                   kernel,
