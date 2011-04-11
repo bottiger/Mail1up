@@ -42,7 +42,7 @@ handle_cast(shutdown, Cfg) ->
     {stop, normal, Cfg}.
 
 handle_call({get_key, Key}, _From, Cfg) ->
-    {ok, Value} = erl_parser:find(Key, Cfg),
+    Value = proplists:get_value(Key, Cfg),
     {reply, Value, Cfg}.
 
 handle_info(_Info, Cfg) ->
@@ -61,7 +61,6 @@ code_change(_OldVsn, Cfg, _Extra) ->
 
 -spec read() -> list().
 read() ->
-    %logger:notice("config.erl: Reading application.cfg"), 
-    {ok, Cfg} = file:consult("application.cfg"),
-    Cfg.
+    %logger:notice("config.erl: Reading application.cfg"),
+    application:get_all_env(mail1up).
 
