@@ -17,7 +17,7 @@ mail_id(User, Pass, Id, Folder) ->
     dict:map(fun(K, V) -> dict:store(binary:bin_to_list(K), binary:bin_to_list(V), NewMailDict) end, MailDict),
     NewMailDict.
 
--spec mail_id(string(), string(), integer()) -> 
+%-spec mail_id(string(), string(), integer()) -> 
 mail_id(User, Pass, Id) ->
     mail_id(User, Pass, Id, "INBOX").
 
