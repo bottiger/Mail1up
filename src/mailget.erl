@@ -8,7 +8,7 @@ list_folders(User, Pass) ->
     % <<"(\\HasNoChildren) \"/\" \"Personal\"">>
     {ok, ImapFolders} = imappy(User, Pass, ["--list-folders"]),
     lists:map(fun(X) -> lists:last(string:tokens(binary:bin_to_list(X), "\"")) end, ImapFolders).
-    
+
 -spec mail_id(string(), string(), integer()) -> list(string()).
 mail_id(User, Pass, Id, Folder) ->
     {ok, MailDict} = imappy(User, Pass, ["--message-id", integer_to_list(Id), "--folder", Folder]),
@@ -17,7 +17,7 @@ mail_id(User, Pass, Id, Folder) ->
     dict:map(fun(K, V) -> dict:store(binary:bin_to_list(K), binary:bin_to_list(V), NewMailDict) end, MailDict),
     NewMailDict.
 
-%-spec mail_id(string(), string(), integer()) -> 
+%-spec mail_id(string(), string(), integer()) ->
 mail_id(User, Pass, Id) ->
     mail_id(User, Pass, Id, "INBOX").
 
