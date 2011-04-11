@@ -3,22 +3,25 @@
 -export([check/0, check/1, check/2, check/3]).
 
 -spec list_folders(string(), string()) -> list(string()).
+%% @doc Imap returns folders like this: [<"(\\HasNoChildren) \"/\" \"Personal\"">>, ...]
+%% list_folders parses this into a list of strings. ["Personal",...]
+%% @end
 list_folders(User, Pass) ->
     % ImapFolders is a list of Binary objects like:
-    % <<"(\\HasNoChildren) \"/\" \"Personal\"">>
     {ok, ImapFolders} = imappy(User, Pass, ["--list-folders"]),
     lists:map(fun(X) -> lists:last(string:tokens(binary:bin_to_list(X), "\"")) end, ImapFolders).
-    
-%-spec mail_id(string(), string(), integer()) -> list(string()). 
+
+%-spec mail_id(string(), string(), integer()) ->
 mail_id(User, Pass, Id) ->
     mail_id(User, Pass, Id, "INBOX").
 
 %-spec mail_id(string(), string(), integer(), string()) -> list(string()).
 mail_id(User, Pass, Id, Folder) ->
     {ok, MailDict} = imappy(User, Pass, ["--message-id", integer_to_list(Id), "--folder", Folder]),
-    %string:tokens(binary:bin_to_list(Mail), "\r\n").
     parse_mail_dict(MailDict).
 
+%% @doc Return the raw header of the mail with id=ID
+%% @end
 mail_header_id(User, Pass, Id) ->
     {ok, MailDict} = imappy(User, Pass, ["--message-id", integer_to_list(Id), "--headers-only"]),
     parse_mail_dict(MailDict).
@@ -36,12 +39,12 @@ mail_header_id_dict(User, Pass, Id) ->
                 {Key, Value}
               end, HeaderList)).
 
+
 %-spec parse_mail_dict(dict()) -> dict().
+%% @doc Converts MailDict from a Dict of <<"binaries">> th utf-8">> into a dict of "utf8 strings"
+%% @end
 parse_mail_dict(MailDict) ->
-    % Converts MailDict from a Dict of <<"binaries">> th utf-8">> into a dict of "utf8 strings"
     dict:fold(fun(K, V, AccIn) -> dict:store(unicode:characters_to_list(K), unicode:characters_to_list(V), AccIn) end, dict:new(), MailDict).
-
-
 
 -spec check() -> term().
 check() -> check("").
