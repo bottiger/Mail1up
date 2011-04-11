@@ -84,16 +84,16 @@ header_to_dict(Header) ->
                 {Key, Value}
               end, HeaderList)).
 
--spec check() -> term().
-check() -> check("").
-check(MsgID) -> check("jmailbackup44@gmail.com", "qwerty60", MsgID).
-check(User, Pass) -> check(User, Pass, "").
-
-check(User, Pass, MsgID) when is_integer(MsgID) ->
-    check(User, Pass, ["--message-id", integer_to_list(MsgID)]);
-
-check(User, Pass, MsgArgs) ->
-    imappy(User, Pass, MsgArgs).
+%-spec check() -> term().
+%check() -> check("").
+%check(MsgID) -> check("jmailbackup44@gmail.com", "qwerty60", MsgID).
+%check(User, Pass) -> check(User, Pass, "").
+%
+%check(User, Pass, MsgID) when is_integer(MsgID) ->
+%    check(User, Pass, ["--message-id", integer_to_list(MsgID)]);
+%
+%check(User, Pass, MsgArgs) ->
+%    imappy(User, Pass, MsgArgs).
 
 imappy(User, Pass) ->
     imappy(User, Pass, "").
